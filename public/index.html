@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spill It AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+</head>
+
+<body>
+    <header>
+        <h2>Spill It AI</h2>
+        <h4>Overshare. Overthink. Outta here.</h4>
+    </header>
+
+    <main class="chatcontainer" id="chat">
+
+        <div class="message" id="starter"></div>
+    </main>
+
+    <div class="endpart">
+        <div class="inputcontainer">
+            <textarea type="text" id="msginput" autocomplete="off"></textarea>
+            <button onclick="sendMsg()" id="sendbtn">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </div>
+
+        <div class="end">
+            <h4>No logins. No memory. No drama. </h4>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

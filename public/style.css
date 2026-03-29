@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Press+Start+2P&display=swap');
+
+body {
+    text-align: center;
+    font-family: Poppins;
+    background-color: #161b22;
+    color: #f8f8ff;
+}
+
+header {
+    margin-top: 2rem;
+}
+
+h2 {
+    color: hsl(223, 47%, 87%);
+    font-weight: 700;
+}
+
+h4 {
+    color: #A3A7B6;
+    font-weight: 500;
+}
+
+.end {
+    width: 100%;
+    background-color: #161b22
+}
+
+.end h4 {
+    color: hsl(227, 12%, 28%);
+}
+
+.inputcontainer {
+    border: 2px solid #A3A7B6;
+    border-radius: 10px;
+    height: 4.5rem;
+    padding: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    width: 60%;
+    padding: 1rem;
+
+}
+
+.endpart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #161b22;
+}
+
+#msginput {
+    font-family: Poppins;
+    border-radius: 10px;
+    width: 92%;
+    background-color: #161b22;
+    ;
+    outline: none;
+    box-shadow: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    padding-left: 30px;
+    color: hsl(223, 47%, 87%);
+    resize: none;
+
+}
+
+#msginput::placeholder {
+    color: hsl(227, 12%, 28%);
+}
+
+#sendbtn {
+    border-radius: 10px;
+    outline: none;
+    box-shadow: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2rem;
+    width: 55px;
+    background-color: #161b22;
+    color: hsl(0, 0%, 80%);
+}
+
+#sendbtn:active {
+    color: hsl(0, 0%, 100%);
+}
+
+.chatcontainer {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+}
+
+#starter {
+    color: rgb(206, 215, 227);
+    font-size: 2rem;
+    background-color: #161b22;
+    padding-bottom: 5rem;
+}
+
+.newchatcontainer {
+    overflow-y: auto;
+    padding: 1rem;
+    min-height: 70vh;
+    margin-left: 19%;
+    margin-right: 19%;
+    margin-bottom: 13%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bubble {
+    max-width: 90%;
+    word-wrap: break-word;
+    color: hsl(0, 0%, 90%);
+    border-radius: 16px;
+    font-size: 1rem;
+    padding: 1rem;
+}
+
+/* align-self controls alignment on the cross axis ,and the cross axis depends on your flex-direction*/
+.user-bubble {
+    align-self: flex-end;
+    background-color: #3e92cc;
+    border-bottom-right-radius: 2px;
+}
+
+.ai-bubble {
+    align-self: flex-start;
+    background-color: hsl(225, 15%, 20%);
+    border-bottom-left-radius: 2px;
+}
+
+::-webkit-scrollbar {
+    width: 0.5rem;
+
+}
+
+/*bar of the scrollbar */
+::-webkit-scrollbar-thumb {
+    background-color: #b8b5ff;
+    border-radius: 10px;
+}
+
+/*area apart from the scrollable part */
+::-webkit-scrollbar-track {
+    background: #161b22;
+}
