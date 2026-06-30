@@ -102,7 +102,7 @@ npm run dev
 ## Rate Limit
 
 15 requests per minute per IP  
-Returns 429 Too Many Requests when exceeded  
+
 
 ---
 
