@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser"
 import sessionMiddleware from "./middleware/session.js"
 import connectDB from "./config/db.js"
 import conversationRoutes from "./routes/conversationRoutes.js"
+import { cleanupExpiredSessions } from "./services/sessionCleanup.js"
 
 dotenv.config()
 const app = express()
@@ -18,6 +19,7 @@ app.use("/api/chat", chatRoutes)
 app.use("/api/conversations", conversationRoutes)
 const startServer = async()=>{
     await connectDB()
+    
     app.listen(process.env.PORT, () => {
         console.log(`server running on http://localhost:${process.env.PORT}`)
     })
