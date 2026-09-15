@@ -26,6 +26,10 @@ const sessionMiddleware = async (req, res, next) => {
 
         req.sessionId = session._id
 
+        await Session.findByIdAndUpdate(session._id, {
+            lastActivityAt: new Date()
+        })
+
         next()
     } catch (error) {
         console.error("SESSION ERROR:", error)
