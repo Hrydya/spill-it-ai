@@ -6,6 +6,9 @@ function starterfunc() {
     starter.textContent = startersarray[x];
 }
 document.addEventListener("DOMContentLoaded", starterfunc);
+
+let conversationId = null;
+
 let chatHistory = [
     {
         role: "system",
@@ -40,12 +43,31 @@ async function sendMsg() {
         // Adding user's message to history
         chatHistory.push({ role: "user", content: msg });
 
+        if (!conversationId) {
+            const conversationResponse = await fetch("/api/conversations", {
+                method: "POST"
+            });
+
+            const conversationData = await conversationResponse.json();
+
+            if (!conversationResponse.ok) {
+                throw new Error(
+                    conversationData?.error || "Failed to create conversation"
+                );
+            }
+
+            conversationId = conversationData.conversation._id;
+        }
+
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ messages: chatHistory })
+            body: JSON.stringify({
+                conversationId,
+                message: msg
+            })
         });
         
 
