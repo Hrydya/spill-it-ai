@@ -2,13 +2,13 @@ import Conversation from "../model/Conversation.js"
 import Message from "../model/Message.js"
 export const createConversation = async (req, res, next) => {
     try {
-        console.log("CREATE CONVERSATION CALLED")
+    
 
         const conversation = await Conversation.create({
             sessionId: req.sessionId
         })
 
-        console.log("NEW ID:", conversation._id)
+     
 
         res.status(201).json({
             conversation
