@@ -8,22 +8,195 @@ function starterfunc() {
 document.addEventListener("DOMContentLoaded", starterfunc);
 
 let conversationId = null;
+let isSending = false;
+const conversationList = document.getElementById("conversationList");
+const newChatBtn = document.getElementById("newchatbtn");
 
-let chatHistory = [
-    {
-        role: "system",
-        content: "You are a calm, non-judgmental space for people to vent. Your job is to listen first, not fix. Always: 1) Acknowledge what they're feeling in 1 sentence. 2) Reflect it back or ask one gentle follow-up. 3) Only suggest something if they ask. Keep it casual, short, like a friend texting at 2AM. No therapy speak. No toxic positivity. No 'I understand how you feel'. Emojis only if the vibe calls for it."    }
-];
+async function loadConversations() {
+    try {
+        const response = await fetch("/api/conversations");
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || "Failed to load conversations");
+        }
+
+        conversationList.innerHTML = "";
+
+        data.conversations.forEach(conversation => {
+            const item = document.createElement("div");
+            item.className = "conversation-item";
+
+            const title = document.createElement("span");
+            title.textContent = conversation.title;
+
+            const saveBtn = document.createElement("button");
+            saveBtn.className = "save-btn";
+            saveBtn.textContent = conversation.saved ? "★" : "☆";
+            saveBtn.title = conversation.saved ? "Unsave" : "Save";
+
+            saveBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                await toggleSave(conversation._id, saveBtn);
+            });
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "×";
+            deleteBtn.title = "Delete";
+
+            deleteBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                await deleteConversation(conversation._id);
+            });
+
+            item.appendChild(title);
+            item.appendChild(saveBtn);
+            item.appendChild(deleteBtn);
+
+            item.addEventListener("click", () => {
+                openConversation(conversation._id);
+            });
+
+            conversationList.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error("Failed to load conversations:", error);
+    }
+}
+async function toggleSave(id,saveBtn) {
+    try {
+        const response = await fetch(`/api/conversations/${id}/save`, {
+            method: "PATCH"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || "Failed to save conversation");
+        }
+
+        saveBtn.textContent = data.conversation.saved ? "★" : "☆";
+
+    } catch (error) {
+        console.error("Failed to toggle save:", error);
+    }
+}
+async function deleteConversation(id) {
+    try {
+        const response = await fetch(`/api/conversations/${id}`, {
+            method: "DELETE"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || "Failed to delete conversation");
+        }
+
+        if (conversationId === id) {
+            startNewConversation();
+        }
+
+        await loadConversations();
+
+    } catch (error) {
+        console.error("Failed to delete conversation:", error);
+    }
+}
+async function openConversation(id) {
+    try {
+        const response = await fetch(`/api/conversations/${id}/messages`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || "Failed to load conversation");
+        }
+
+        conversationId = id;
+
+        const chat = document.getElementById("chat");
+        chat.innerHTML = "";
+        chat.classList.remove("chatcontainer");
+        chat.classList.add("newchatcontainer");
+
+        data.messages.forEach(message => {
+            const bubble = document.createElement("div");
+
+            bubble.className =
+                message.role === "user"
+                    ? "bubble user-bubble"
+                    : "bubble ai-bubble";
+
+            bubble.textContent = message.content;
+            chat.appendChild(bubble);
+        });
+
+    } catch (error) {
+        console.error("Failed to open conversation:", error);
+    }
+}
+async function startNewConversation() {
+    try {
+        const response = await fetch("/api/conversations", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || "Failed to create conversation");
+        }
+
+        conversationId = data.conversation._id;
+
+        const chat = document.getElementById("chat");
+
+        chat.innerHTML = `<div class="message" id="starter"></div>`;
+
+        chat.classList.remove("newchatcontainer");
+        chat.classList.add("chatcontainer");
+
+        const newStarter = document.getElementById("starter");
+
+        const startersarray = [
+            "What's a secret you'd share with a stranger?",
+            "Got a random brainwave or drama to spill?",
+            "Say it like your phone's on airplane mode.",
+            "What's spinning in your mind?"
+        ];
+
+        newStarter.textContent =
+            startersarray[Math.floor(Math.random() * startersarray.length)];
+
+        await loadConversations();
+
+    } catch (error) {
+        console.error("Failed to create conversation:", error);
+    }
+}
+newChatBtn.addEventListener("click", startNewConversation);
+
+
+setTimeout(loadConversations, 1000);
+
 async function sendMsg() {
+    if (isSending) return;
+
     const input = document.getElementById("msginput");
     const msg = input.value.trim();
     if (msg == "") return;
+
+    isSending = true;
+    document.getElementById("sendbtn").disabled = true;
+
     input.value = "";
 
     const chatcontainer = document.getElementById("chat");
     chatcontainer.classList.remove("chatcontainer");
     chatcontainer.classList.add("newchatcontainer");
-    starter.textContent = "";
+    document.getElementById("starter").textContent = "";
 
     //userbubble
     const userbubble = document.createElement("div");
@@ -37,11 +210,8 @@ async function sendMsg() {
     aibubble.textContent = "Typing....";
     document.getElementById("chat").appendChild(aibubble);
 
-
-
     try {
         // Adding user's message to history
-        chatHistory.push({ role: "user", content: msg });
 
         if (!conversationId) {
             const conversationResponse = await fetch("/api/conversations", {
@@ -57,6 +227,7 @@ async function sendMsg() {
             }
 
             conversationId = conversationData.conversation._id;
+            await loadConversations();
         }
 
         const response = await fetch("/api/chat", {
@@ -69,14 +240,11 @@ async function sendMsg() {
                 message: msg
             })
         });
-        
 
         const data = await response.json().catch(() => ({}));
 
-        // OpenAI-like responses have: { choices: [{ message: { content } }] }
         const aiReply = data?.choices?.[0]?.message?.content?.trim();
 
-        // If the API responded with an error (or an unexpected shape), surface it.
         if (!aiReply) {
             const errMsg =
                 data?.error?.message ||
@@ -86,8 +254,6 @@ async function sendMsg() {
             throw new Error(errMsg);
         }
 
-        // Adding AI's reply to history
-        chatHistory.push({ role: "assistant", content: aiReply });
         aibubble.textContent = "";
         let i = 0;
         let timer = setInterval(() => {
@@ -97,22 +263,21 @@ async function sendMsg() {
         }, 20);
 
     } catch (err) {
-        // Show a helpful message when the backend reports an API error (e.g. missing API key).
-        aibubble.textContent = err?.message || "Sorry, I can't talk about that right now.";
-        chatHistory = [{
-            role: "system",
-            content: " You are a friendly chatbot.Let the user vent and express themselves.Reply in a casual, concise, and natural way, like a friend texting.Avoid being formal or overly positive.short-medium answers"
-        }];
+        aibubble.textContent =
+            err?.message || "Sorry, I can't talk about that right now.";
         console.error(err);
 
+    } finally {
+        isSending = false;
+        document.getElementById("sendbtn").disabled = false;
     }
-
-    input.value = "";
 }
-
 document.getElementById("msginput").addEventListener("keydown", (e) => {
     if (e.key == "Enter" && !e.shiftKey) {
         e.preventDefault();
         sendMsg();
     }
+});
+window.addEventListener("pagehide", () => {
+    navigator.sendBeacon("/api/session/end");
 });

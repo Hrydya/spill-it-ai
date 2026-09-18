@@ -5,7 +5,6 @@ const rateLimiter = (req, res, next) => {
     const now = Date.now()
     const windowMs = 60 * 1000
     const max = 15
-
     if (!requests[ip]) {
         requests[ip] = []
     }
@@ -19,5 +18,5 @@ const rateLimiter = (req, res, next) => {
     requests[ip].push(now)
     next()
 }
-
 export default rateLimiter
+

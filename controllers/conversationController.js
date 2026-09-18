@@ -1,14 +1,16 @@
 import Conversation from "../model/Conversation.js"
 import Message from "../model/Message.js"
+
 export const createConversation = async (req, res, next) => {
     try {
-    
-
-        const conversation = await Conversation.create({
+        const count = await Conversation.countDocuments({
             sessionId: req.sessionId
         })
 
-     
+        const conversation = await Conversation.create({
+            sessionId: req.sessionId,
+            title: `Conversation ${ count + 1 } `
+        })
 
         res.status(201).json({
             conversation
