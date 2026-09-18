@@ -23,6 +23,11 @@ const conversationSchema = new mongoose.Schema(
         summary: {
             type: String,
             default: ""
+        },
+        lastSummarizedMessageId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Message",
+            default: null
         }
     },
     {

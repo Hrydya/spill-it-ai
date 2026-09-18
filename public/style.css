@@ -157,3 +157,100 @@ h4 {
 ::-webkit-scrollbar-track {
     background: #161b22;
 }
+
+
+/* Sidebar */
+
+body {
+    margin: 0;
+}
+
+
+
+#newchatbtn {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #3a414b;
+    border-radius: 8px;
+    background-color: #161b22;
+    color: #dce2ec;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: Poppins;
+}
+
+#newchatbtn:hover {
+    background-color: #202731;
+}
+
+.conversation-section {
+    margin-top: 2rem;
+}
+
+.conversation-section h4 {
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+    color: #777f8f;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.65rem 0.5rem;
+    margin-bottom: 0.3rem;
+    border-radius: 7px;
+    cursor: pointer;
+    color: #cdd3dd;
+    font-size: 0.85rem;
+}
+
+.conversation-item:hover {
+    background-color: #202731;
+}
+
+.conversation-item span:first-child {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.save-btn,
+.delete-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #a3a7b6;
+    font-size: 1rem;
+    padding: 0.15rem;
+}
+
+.save-btn:hover,
+.delete-btn:hover {
+    color: #f8f8ff;
+}
+
+.main {
+    margin-left: 240px;
+    min-height: 100vh;
+        position: relative;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100vh;
+    min-height: 100vh;
+    background-color: #11161d;
+    border-right: 1px solid #2a3038;
+    padding: 1.5rem 1rem;
+    box-sizing: border-box;
+    text-align: left;
+    overflow-y: auto;
+    z-index: 1000;
+}
