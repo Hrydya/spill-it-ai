@@ -78,13 +78,17 @@ export const handleChat = async (req, res, next) => {
             },
             body: JSON.stringify({
                 model: "gemini-2.5-flash",
-                messages
+                messages,
+                stream: true
             })
         })
 
-        const data = await response.json().catch(() => ({}))
+        
 
         if (!response.ok) {
+
+            const data = await response.json().catch(() => ({}))
+
             const errMessage =
                 data?.error?.message ||
                 data?.error?.detail ||
@@ -97,10 +101,47 @@ export const handleChat = async (req, res, next) => {
             })
         }
 
-        const aiReply = data?.choices?.[0]?.message?.content?.trim()
+        res.setHeader("Content-Type", "text/event-stream")
+        res.setHeader("Cache-Control", "no-cache")
+        res.setHeader("Connection", "keep-alive")
+        res.flushHeaders()
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+
+        let buffer = ""
+        let aiReply = ""
+
+        while (true) {
+            const { value, done } = await reader.read()
+
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+
+            const lines = buffer.split("\n")
+            buffer = lines.pop()
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue
+
+                const data = line.slice(6)
+
+                if (data === "[DONE]") continue
+
+                const parsed = JSON.parse(data)
+                const chunk = parsed?.choices?.[0]?.delta?.content || ""
+
+                if (!chunk) continue
+
+                aiReply += chunk
+
+                res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`)
+            }
+        }
 
         if (aiReply) {
-            const assistantMessage = await Message.create({
+            await Message.create({
                 conversationId,
                 role: "assistant",
                 content: aiReply
@@ -126,8 +167,7 @@ export const handleChat = async (req, res, next) => {
             }
         }
 
-        res.json(data)
-
+        res.end()
     } catch (error) {
         next(error)
     }
