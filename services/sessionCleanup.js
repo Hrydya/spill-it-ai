@@ -1,5 +1,5 @@
-import Session from "../model/Session.js"
-import Conversation from "../model/Conversation.js"
+import Session from "../model/session.js"
+import Conversation from "../model/conversation.js"
 import Message from "../model/Message.js"
 
 export const cleanupTemporaryConversations = async (sessionId) => {

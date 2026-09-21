@@ -1,4 +1,4 @@
-import Conversation from "../model/Conversation.js"
+import Conversation from "../model/conversation.js"
 import Message from "../model/Message.js"
 
 export const getConversationContext = async (conversationId, sessionId) => {

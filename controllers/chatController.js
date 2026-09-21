@@ -4,7 +4,7 @@ import {
     shouldSummarize
 } from "../services/contextService.js"
 import Message from "../model/Message.js"
-import Conversation from "../model/Conversation.js"
+import Conversation from "../model/conversation.js"
 import mongoose from "mongoose"
 
 
