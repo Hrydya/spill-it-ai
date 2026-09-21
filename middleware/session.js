@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import Session from "../model/Session.js"
+import Session from "../model/session.js"
 
 const sessionMiddleware = async (req, res, next) => {
     try {
