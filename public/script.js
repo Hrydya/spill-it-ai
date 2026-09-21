@@ -182,6 +182,8 @@ newChatBtn.addEventListener("click", startNewConversation);
 setTimeout(loadConversations, 1000);
 
 async function sendMsg() {
+  
+
     if (isSending) return;
 
     const input = document.getElementById("msginput");
@@ -229,6 +231,7 @@ async function sendMsg() {
             conversationId = conversationData.conversation._id;
             await loadConversations();
         }
+       
 
         const response = await fetch("/api/chat", {
             method: "POST",
@@ -241,26 +244,49 @@ async function sendMsg() {
             })
         });
 
-        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
 
-        const aiReply = data?.choices?.[0]?.message?.content?.trim();
-
-        if (!aiReply) {
             const errMsg =
                 data?.error?.message ||
                 data?.error ||
                 data?.details?.error?.message ||
-                "Empty response from AI";
+                "Failed to get AI response";
+
             throw new Error(errMsg);
         }
 
         aibubble.textContent = "";
-        let i = 0;
-        let timer = setInterval(() => {
-            aibubble.textContent += aiReply[i];
-            i++;
-            if (i >= aiReply.length) clearInterval(timer);
-        }, 20);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let buffer = "";
+
+        while (true) {
+            const { value, done } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+
+                const data = line.slice(6);
+
+                if (data === "[DONE]") continue;
+
+                const parsed = JSON.parse(data);
+                const chunk = parsed?.content || "";
+
+              
+                aibubble.textContent += chunk;
+            }
+        }
 
     } catch (err) {
         aibubble.textContent =
