@@ -1,120 +1,159 @@
 # Spill It AI
 
-Overshare. Overthink. Outta here.
-
-A lightweight anonymous AI chat web app where users can freely vent their thoughts without login, without memory, and without judgment. Everything is ephemeral — nothing is stored.
-
----
-
-## Live Demo
-https://spill-it-ai.onrender.com/
-
----
+An anonymous AI chat platform built with **Node.js, Express.js, MongoDB, and Google Gemini API**.
 
 ## Features
 
-### Anonymous AI Chat
-- No login required
-- No user tracking
-- No message storage (ephemeral conversations)
+* **Anonymous Sessions** — HttpOnly cookie-based sessions with per-session conversation ownership and data isolation.
+* **AI Chat** — Integrated with Gemini 2.5 Flash for conversational responses.
+* **Streaming Responses** — Server-Sent Events (SSE) for incremental AI response delivery.
+* **Conversation Management** — Create, retrieve, save, delete, and switch between conversations.
+* **Context Summarization** — Rolling conversation summaries generated every 12 messages to prevent unbounded context growth while retaining full message history.
+* **Rate Limiting** — Restricts excessive chat requests.
+* **Request Validation** — Validates conversation IDs, message types, and message length.
+* **Automatic Cleanup** — Unsaved conversations are removed when an anonymous session ends.
 
-### Natural Conversation Flow
-- Context-aware AI replies using last few messages
-- Casual, non-judgmental tone designed for venting
+## Architecture
 
-### Fast & Lightweight UI
-- Minimal chat interface
-- Typing animation for AI responses
-- Smooth chat experience
+```text
+Client
+   │
+   ▼
+Express API
+   │
+   ├── Session Middleware
+   │      └── HttpOnly Cookie → Session
+   │
+   ├── Conversation Routes
+   │      └── MongoDB
+   │
+   └── Chat Route
+          │
+          ├── Rate Limiting
+          ├── Request Validation
+          ├── Context Retrieval
+          │      ├── Rolling Summary
+          │      └── Unsummarized Messages
+          │
+          ├── Gemini API
+          │      └── SSE Stream
+          │
+          └── Message Persistence
+```
 
-### Rate Limiting
-- IP-based rate limiting (15 requests/minute)
-- Prevents spam and abuse
+## Context Management
 
----
+The application uses a rolling summarization pipeline to prevent conversation context from growing indefinitely.
 
-## Key Concept
+After every **12 messages**:
 
-### Ephemeral Conversation Architecture
-- No database used for storing chats
-- Messages exist only during the session
-- Zero login friction
-- Privacy-first design (nothing is saved)
+1. The existing summary and newly accumulated messages are sent to the summarization pipeline.
+2. A new summary is generated and stored with the conversation.
+3. `lastSummarizedMessageId` marks the latest message included in the summary.
+4. Subsequent requests retrieve the stored summary and only messages created after this boundary.
+5. Full message history remains persisted in MongoDB.
 
----
+This keeps the model context bounded while preserving the complete conversation history.
+
+## Performance
+
+AI responses are streamed using **Server-Sent Events (SSE)** instead of waiting for the complete model response.
+
+**Average TTFT improvement:**
+
+`5.82s → 4.22s`
+
+**27.6% reduction in time-to-first-token.**
 
 ## Tech Stack
 
-Frontend: HTML, CSS, Vanilla JavaScript  
-Backend: Node.js, Express.js, dotenv  
-AI: Gemini 2.5 Flash (Google Generative Language API)
+| Layer      | Technology               |
+| ---------- | ------------------------ |
+| Frontend   | HTML, CSS, JavaScript    |
+| Backend    | Node.js, Express.js      |
+| Database   | MongoDB, Mongoose        |
+| AI         | Google Gemini 2.5 Flash  |
+| Streaming  | Server-Sent Events (SSE) |
+| Deployment | Render                   |
 
----
+## API Endpoints
+
+```text
+POST   /api/chat
+POST   /api/session/end
+
+POST   /api/conversations
+GET    /api/conversations
+GET    /api/conversations/:conversationId
+GET    /api/conversations/:conversationId/messages
+POST   /api/conversations/:conversationId/messages
+PATCH  /api/conversations/:conversationId/save
+DELETE /api/conversations/:conversationId
+```
 
 ## Project Structure
 
+```text
 spill-it-ai/
-├── server.js  
-├── controllers/  
-│   └── chatController.js  
-├── routes/  
-│   └── chatRoutes.js  
-├── middleware/  
-│   └── rateLimiter.js  
-├── api/  
-│   └── chat.js  
-├── public/  
-│   ├── index.html  
-│   ├── script.js  
-│   └── style.css  
+├── config/
+│   └── db.js
+├── controllers/
+│   ├── chatController.js
+│   └── conversationController.js
+├── middleware/
+│   ├── rateLimiter.js
+│   └── session.js
+├── model/
+│   ├── conversation.js
+│   ├── Message.js
+│   └── session.js
+├── routes/
+│   ├── chatRoutes.js
+│   └── conversationRoutes.js
+├── services/
+│   ├── contextService.js
+│   └── sessionCleanup.js
+├── public/
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── server.js
+└── package.json
+```
 
----
+## Getting Started
 
-## How It Works
+### 1. Install dependencies
 
-1. User types a message in chat UI  
-2. Frontend sends chat history to backend  
-3. Backend forwards last few messages to AI API  
-4. AI generates a short, casual response  
-5. Frontend displays response with typing animation  
-6. No conversation is stored anywhere  
+```bash
+npm install
+```
 
----
+### 2. Configure environment variables
 
-## Setup Instructions
+Create a `.env` file:
 
-Clone repo:
-git clone https://github.com/your-username/spill-it-ai.git  
-cd spill-it-ai  
+```env
+PORT=3000
+MONGO_URI=<mongodb-connection-string>
+TOGETHER_API_KEY=<api-key>
+NODE_ENV=development
+```
 
-Install dependencies:
-npm install  
+### 3. Run the application
 
-Create .env file:
-PORT=5000  
-TOGETHER_API_KEY=your_api_key_here  
+```bash
+npm run dev
+```
 
-Run project:
-npm run dev  
+For production:
 
----
+```bash
+npm start
+```
 
-## Rate Limit
+The application will be available at:
 
-15 requests per minute per IP  
-
-
----
-
-## Note
-
-This project uses a free AI API, so response speed and availability may vary depending on usage limits.
-
----
-
-## Future Improvements
-
-- Streaming responses  
-- Better mobile UI  
-- Optional session memory mode  
-- Improved error handling UX
+```text
+http://localhost:3000
+```
